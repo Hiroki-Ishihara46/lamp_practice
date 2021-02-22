@@ -1,7 +1,8 @@
 <?php 
-require_once MODEL_PATH . 'functions.php';
-require_once MODEL_PATH . 'db.php';
+require_once MODEL_PATH . 'functions.php'; // ../model/functions.phpファイル読み込み
+require_once MODEL_PATH . 'db.php'; // ../model/db.phpファイル読み込み
 
+// ユーザのカート内の全ての商品の情報をDBから参照するSQL文を生成・引き渡し関数
 function get_user_carts($db, $user_id){
   $sql = "
     SELECT
@@ -26,6 +27,7 @@ function get_user_carts($db, $user_id){
   return fetch_all_query($db, $sql);
 }
 
+// ユーザのカート内の特定の商品の情報をDBから参照するSQL文を生成・引き渡し関数
 function get_user_cart($db, $user_id, $item_id){
   $sql = "
     SELECT
@@ -54,14 +56,16 @@ function get_user_cart($db, $user_id, $item_id){
 
 }
 
+// 追加した商品がカート内に存在するか否かによって追加・更新の処理を分岐する関数
 function add_cart($db, $user_id, $item_id ) {
   $cart = get_user_cart($db, $user_id, $item_id);
-  if($cart === false){
-    return insert_cart($db, $user_id, $item_id);
+  if($cart === false){ // カート内に追加した商品が存在しない場合
+    return insert_cart($db, $user_id, $item_id); // 商品をカートに新規追加する処理へ
   }
-  return update_cart_amount($db, $cart['cart_id'], $cart['amount'] + 1);
+  return update_cart_amount($db, $cart['cart_id'], $cart['amount'] + 1); // カート内に既に同じ商品がある場合、購入個数を1つ増やす更新処理へ
 }
 
+// カート内に新規追加する商品の情報をDBに追加するSQL文を生成・引き渡し関数
 function insert_cart($db, $user_id, $item_id, $amount = 1){
   $sql = "
     INSERT INTO
@@ -76,6 +80,7 @@ function insert_cart($db, $user_id, $item_id, $amount = 1){
   return execute_query($db, $sql);
 }
 
+// 変更した商品の購入個数を更新するSQL文を生成・引き渡し関数
 function update_cart_amount($db, $cart_id, $amount){
   $sql = "
     UPDATE
@@ -89,6 +94,7 @@ function update_cart_amount($db, $cart_id, $amount){
   return execute_query($db, $sql);
 }
 
+// 特定商品をカートから削除するSQL文を生成・引き渡し関数
 function delete_cart($db, $cart_id){
   $sql = "
     DELETE FROM
