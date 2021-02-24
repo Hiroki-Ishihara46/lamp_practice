@@ -16,12 +16,18 @@ $password = get_post('password'); // 入力されたパスワードの取得
 
 $db = get_db_connect(); // DB接続
 
-// ログイン処理
-$user = login_as($db, $name, $password); // ログイン処理の結果（true or false）
-if( $user === false){ // ログイン処理に失敗した場合
-  set_error('ログインに失敗しました。'); // エラーメッセージの設定
-  redirect_to(LOGIN_URL); // login.phpへリダイレクト
-}
+$csrf_token = get_post('csrf_token');
+
+if(is_valid_csrf_token($csrf_token) !== false){
+  // ログイン処理
+  $user = login_as($db, $name, $password); // ログイン処理の結果（true or false）
+  if( $user === false){ // ログイン処理に失敗した場合
+    set_error('ログインに失敗しました。'); // エラーメッセージの設定
+    redirect_to(LOGIN_URL); // login.phpへリダイレクト
+  }
+} else {
+  redirect_to(LOGIN_URL);
+}  
 
 set_message('ログインしました。'); // ログイン処理成功メッセージの設定
 if ($user['type'] === USER_TYPE_ADMIN){ // ログインユーザが管理者である場合
