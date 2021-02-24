@@ -16,14 +16,18 @@ if(is_logined() === false){
 $db = get_db_connect(); // DB接続
 $user = get_login_user($db); // ログインユーザ情報の取得
 
-$cart_id = get_post('cart_id'); // カート内の商品の商品idの取得
+$cart_id = get_post('cart_id'); // カートidの取得
 
-// カート内の商品削除処理
-if(delete_cart($db, $cart_id)){ // 商品削除処理が成功した場合
-  set_message('カートを削除しました。'); // 商品削除処理成功メッセージの設定
-} else { // 商品削除処理が失敗した場合
-  set_error('カートの削除に失敗しました。'); // エラーメッセージの設定
-}
+$csrf_token = get_post('csrf_token');
+
+if(is_valid_csrf_token($csrf_token) !== false){
+  // カート内の商品削除処理
+  if(delete_cart($db, $cart_id)){ // 商品削除処理が成功した場合
+    set_message('カートを削除しました。'); // 商品削除処理成功メッセージの設定
+  } else { // 商品削除処理が失敗した場合
+    set_error('カートの削除に失敗しました。'); // エラーメッセージの設定
+  }
+}  
 
 // /cart.phpへリダイレクト
 redirect_to(CART_URL);

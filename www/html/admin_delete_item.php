@@ -25,12 +25,16 @@ if(is_admin($user) === false){
 
 $item_id = get_post('item_id'); // 商品idの取得
 
-// 商品削除処理
-if(destroy_item($db, $item_id) === true){ // 商品削除処理が成功した場合
-  set_message('商品を削除しました。'); // 商品削除処理成功メッセージの設定
-} else { // 商品削除処理が失敗した場合
-  set_error('商品削除に失敗しました。'); // エラーメッセージの設定
-}
+$csrf_token = get_post('csrf_token');
+
+if(is_valid_csrf_token($csrf_token) !== false){
+  // 商品削除処理
+  if(destroy_item($db, $item_id) === true){ // 商品削除処理が成功した場合
+    set_message('商品を削除しました。'); // 商品削除処理成功メッセージの設定
+  } else { // 商品削除処理が失敗した場合
+    set_error('商品削除に失敗しました。'); // エラーメッセージの設定
+  }
+}  
 
 
 // /admin.phpへリダイレクト

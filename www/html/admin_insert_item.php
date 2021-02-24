@@ -30,12 +30,16 @@ $stock = get_post('stock'); // 商品在庫数の取得
 
 $image = get_file('image'); // アップロードされた画像ファイル情報の取得
 
-// 商品登録処理
-if(regist_item($db, $name, $price, $stock, $status, $image)){ // 商品登録処理が成功した場合
-  set_message('商品を登録しました。'); // 商品登録処理成功メッセージの設定
-}else { // 商品登録処理が失敗した場合
-  set_error('商品の登録に失敗しました。'); // エラーメッセージの設定
-}
+$csrf_token = get_post('csrf_token');
+
+if(is_valid_csrf_token($csrf_token) !== false){
+  // 商品登録処理
+  if(regist_item($db, $name, $price, $stock, $status, $image)){ // 商品登録処理が成功した場合
+    set_message('商品を登録しました。'); // 商品登録処理成功メッセージの設定
+  }else { // 商品登録処理が失敗した場合
+    set_error('商品の登録に失敗しました。'); // エラーメッセージの設定
+  }
+}  
 
 // /admin.phpへリダイレクト
 redirect_to(ADMIN_URL);

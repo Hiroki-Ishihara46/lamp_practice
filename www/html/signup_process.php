@@ -17,16 +17,22 @@ $password_confirmation = get_post('password_confirmation'); // 入力された�
 
 $db = get_db_connect(); // DB接続
 
-try{
-  $result = regist_user($db, $name, $password, $password_confirmation); // ユーザ登録処理
-  if( $result=== false){ // ユーザ登録処理に失敗した場合
+$csrf_token = get_post('csrf_token');
+
+if(is_valid_csrf_token($csrf_token) !== false){
+  try{
+    $result = regist_user($db, $name, $password, $password_confirmation); // ユーザ登録処理
+    if( $result=== false){ // ユーザ登録処理に失敗した場合
+      set_error('ユーザー登録に失敗しました。'); // エラーメッセージの設定
+      redirect_to(SIGNUP_URL); // signup.phpへリダイレクト
+    }
+  }catch(PDOException $e){ // 例外処理
     set_error('ユーザー登録に失敗しました。'); // エラーメッセージの設定
     redirect_to(SIGNUP_URL); // signup.phpへリダイレクト
   }
-}catch(PDOException $e){ // 例外処理
-  set_error('ユーザー登録に失敗しました。'); // エラーメッセージの設定
-  redirect_to(SIGNUP_URL); // signup.phpへリダイレクト
-}
+} else {
+  redirect_to(SIGNUP_URL);
+}  
 
 set_message('ユーザー登録が完了しました。'); // ユーザ登録処理成功メッセージの設定
 login_as($db, $name, $password); // ログイン処理

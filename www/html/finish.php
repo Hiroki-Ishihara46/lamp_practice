@@ -18,11 +18,17 @@ $user = get_login_user($db); // ログインユーザ情報の取得
 
 $carts = get_user_carts($db, $user['user_id']); // ログインユーザのカート情報の取得
 
-// カート内商品の購入処理
-if(purchase_carts($db, $carts) === false){ // 購入処理が失敗した場合
-  set_error('商品が購入できませんでした。'); // エラーメッセージの設定
-  redirect_to(CART_URL); // /cart.phpへリダイレクト
-} 
+$csrf_token = get_post('csrf_token');
+
+if(is_valid_csrf_token($csrf_token) !== false){
+  // カート内商品の購入処理
+  if(purchase_carts($db, $carts) === false){ // 購入処理が失敗した場合
+    set_error('商品が購入できませんでした。'); // エラーメッセージの設定
+    redirect_to(CART_URL); // /cart.phpへリダイレクト
+  }
+} else {
+  redirect_to(CART_URL);
+}   
 
 $total_price = sum_carts($carts); // カート内商品の合計金額
 
