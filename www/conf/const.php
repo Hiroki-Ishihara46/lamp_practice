@@ -22,6 +22,7 @@ define('HOME_URL', '/index.php'); // index.phpファイル
 define('CART_URL', '/cart.php'); // cart.phpファイル
 define('FINISH_URL', '/finish.php'); // finish.phpファイル
 define('ADMIN_URL', '/admin.php'); // admin.phpファイル
+define('ORDER_URL', '/order.php');
 
 define('REGEXP_ALPHANUMERIC', '/\A[0-9a-zA-Z]+\z/'); // 半角英数字の正規表現
 define('REGEXP_POSITIVE_INTEGER', '/\A([1-9][0-9]*|0)\z/'); // 正の整数の正規表現

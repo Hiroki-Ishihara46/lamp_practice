@@ -8,7 +8,7 @@ CREATE TABLE `orders` (
 
 CREATE TABLE `order_details` (
  `order_id` int(11) NOT NULL,
- `product_id` int(11) NOT NULL,
+ `item_id` int(11) NOT NULL,
  `price` int(11) NOT NULL,
  `amount` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
