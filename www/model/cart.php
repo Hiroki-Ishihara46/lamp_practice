@@ -1,6 +1,7 @@
 <?php 
 require_once MODEL_PATH . 'functions.php'; // ../model/functions.phpファイル読み込み
 require_once MODEL_PATH . 'db.php'; // ../model/db.phpファイル読み込み
+require_once MODEL_PATH . 'user.php';
 
 // ユーザのカート内の全ての商品の情報をDBから参照するSQL文を生成・引き渡し関数
 function get_user_carts($db, $user_id){
@@ -112,6 +113,7 @@ function purchase_carts($db, $carts){
   if(validate_cart_purchase($carts) === false){
     return false;
   }
+  $db->beginTransaction();
   foreach($carts as $cart){
     if(update_item_stock(
         $db, 
@@ -121,8 +123,34 @@ function purchase_carts($db, $carts){
       set_error($cart['name'] . 'の購入に失敗しました。');
     }
   }
-  
   delete_user_carts($db, $carts[0]['user_id']);
+  insert_order($db, $carts[0]['user_id']);
+  $order_id = $db->lastInsertId();
+  foreach($carts as $cart){
+    insert_order_detail($db, $order_id, $cart['item_id'], $cart['price'], $cart['amount']);
+  }
+  if(has_error()){
+    $db->rollback();
+    return false;
+  } else {
+    $db->commit();
+    return true;
+  }  
+
+  /*
+  //$db->beginTransaction();
+  if(delete_user_carts($db, $carts[0]['user_id'])
+    && insert_order($db, $carts[0]['user_id'])){
+    $order_id = $db->lastInsertId();
+    foreach($carts as $cart){
+      insert_order_detail($db, $order_id, $cart['item_id'], $cart['price'], $cart['amount']);
+    }    
+    //$db->commit();
+    return true;      
+  }
+  //$db->rollback();
+  return false;
+  */
 }
 
 function delete_user_carts($db, $user_id){
@@ -164,3 +192,112 @@ function validate_cart_purchase($carts){
   return true;
 }
 
+function insert_order($db, $user_id){
+  $sql = "
+    INSERT INTO
+      orders(
+        user_id
+      )
+    VALUES(?)
+  ";
+
+  return execute_query($db, $sql, array($user_id));
+}
+
+function insert_order_detail($db, $order_id, $item_id, $price, $amount){
+  $sql = "
+    INSERT INTO
+      order_details(
+        order_id,
+        item_id,
+        price,
+        amount
+      )
+    VALUES(?, ?, ?, ?)
+  ";
+
+  return execute_query($db, $sql, array($order_id, $item_id, $price, $amount));  
+}
+
+function get_user_orders($db, $user, $user_id){
+  $sql = '
+    SELECT
+      orders.order_id,
+      orders.created,
+      SUM(order_details.price * order_details.amount) AS total
+    FROM
+      orders
+    JOIN
+      order_details
+    ON
+      orders.order_id = order_details.order_id
+    GROUP BY
+      orders.order_id
+    ORDER BY
+      order_id DESC       
+  ';
+  if(is_admin($user) === false){
+    $sql = '
+      SELECT
+        orders.order_id,
+        orders.created,
+        SUM(order_details.price * order_details.amount) AS total
+      FROM
+        orders
+      JOIN
+        order_details
+      ON
+        orders.order_id = order_details.order_id
+      WHERE
+        orders.user_id = ?  
+      GROUP BY
+        orders.order_id
+      ORDER BY
+        order_id DESC
+    ';
+
+    return fetch_all_query($db, $sql, array($user_id));
+
+  }
+    
+  return fetch_all_query($db, $sql);
+}
+
+function get_user_order($db, $order_id){
+  $sql = '
+    SELECT
+      orders.order_id,
+      orders.created,
+      SUM(order_details.price * order_details.amount) AS total
+    FROM
+      orders
+    JOIN
+      order_details
+    ON
+      orders.order_id = order_details.order_id
+    WHERE
+      orders.order_id = ?  
+    GROUP BY
+      orders.order_id      
+  ';
+  return fetch_query($db, $sql, array($order_id));
+}
+
+function get_order_details($db, $order_id){
+  $sql = "
+  SELECT
+    items.item_id,
+    items.name,
+    order_details.price,
+    order_details.amount
+  FROM
+    items
+  JOIN
+    order_details
+  ON
+    items.item_id = order_details.item_id    
+  WHERE
+    order_details.order_id = ?
+";
+return fetch_all_query($db, $sql, array($order_id));
+}
