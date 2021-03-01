@@ -25,6 +25,8 @@ if(is_valid_csrf_token($csrf_token) !== false){
     $order = get_user_order($db, $order_id);
 
     $order_details = get_order_details($db, $order_id); 
+} else {
+    redirect_to(ORDER_URL);
 }
 
 include_once VIEW_PATH . 'order_detail_view.php'; 
