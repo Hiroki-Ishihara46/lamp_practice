@@ -5,8 +5,6 @@ require_once MODEL_PATH . 'user.php'; // ../model/user.phpファイル読み込�
 require_once MODEL_PATH . 'item.php'; // ../model/item.phpファイル読み込み
 require_once MODEL_PATH . 'cart.php'; // ../model/cart.phpファイル読み込み
 
-header('X-FRAME-OPTIONS: DENY');
-
 // セッション開始
 session_start();
 
@@ -20,8 +18,13 @@ $user = get_login_user($db); // ログインユーザ情報の取得
 
 $order_id = get_post('order_id');
 
-$order = get_user_order($db, $order_id);
+$csrf_token = get_post('csrf_token');
 
-$order_details = get_order_details($db, $order_id); 
+if(is_valid_csrf_token($csrf_token) !== false){
+
+    $order = get_user_order($db, $order_id);
+
+    $order_details = get_order_details($db, $order_id); 
+}
 
 include_once VIEW_PATH . 'order_detail_view.php'; 
