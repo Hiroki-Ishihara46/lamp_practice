@@ -19,6 +19,12 @@ $user = get_login_user($db); // ログインユーザ情報の取得
 
 $items = get_open_items($db); // 商品ステータスが公開の商品の情報取得
 
+$ranking = get_ranking($db); // DBから人気ランキング上位３つの商品の情報取得
+
+$ranking_number = get_ranking_number($ranking); // ランキングの順位番号の取得
+
+$ranked_items = get_ranked_items($ranking_number, $ranking); // 順位番号を追加した人気ランキング上位３つの商品の情報取得
+
 $csrf_token = get_csrf_token();
 
 include_once VIEW_PATH . 'index_view.php'; // ../view/index_view.phpファイル読み込み
