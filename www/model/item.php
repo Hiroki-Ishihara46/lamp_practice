@@ -206,3 +206,59 @@ function is_valid_item_status($status){
   }
   return $is_valid;
 }
+
+function get_ranking($db){
+  $sql = "
+    SELECT
+      items.item_id, 
+      items.name,
+      items.price,
+      items.image,
+      SUM(order_details.amount) as total_amount
+    FROM
+      items
+    JOIN
+      order_details
+    ON
+      items.item_id = order_details.item_id
+    WHERE
+      items.status = 1
+    GROUP BY
+      items.item_id
+    ORDER BY
+      total_amount DESC
+    LIMIT 3    
+  ";
+
+  return fetch_all_query($db, $sql);
+}
+
+// 順位番号を取得する関数（同率あり）
+function get_ranking_number($ranking){
+  $rank = 1;
+  $tmp_rank = 1;
+  $i = 0;
+  $numbers = array();
+  while($i < count($ranking)){
+    if($ranking[$i]['total_amount'] === $ranking[$i - 1]['total_amount']){
+      $numbers[] = $tmp_rank;
+      $rank++;
+      $i++;
+    } else {
+      $numbers[] = $rank;
+      $tmp_rank = $rank;
+      $rank++;
+      $i++;
+    }
+  }
+  return $numbers;
+}
+
+// 順位番号を追加した商品情報の配列を作る関数
+function get_ranked_items($numbers, $ranking){
+  $get_ranked_items = array();
+  for($i = 0; $i < count($ranking); $i++){
+    $get_ranked_items[] = array('rank' => $numbers[$i], 'name' => $ranking[$i]['name'], 'price' => $ranking[$i]['price'], 'image' => $ranking[$i]['image'], 'total_amount' => $ranking[$i]['total_amount']);
+  }
+  return $get_ranked_items;
+}
